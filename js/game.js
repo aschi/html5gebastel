@@ -1,34 +1,49 @@
-(function() {
+// shim layer with setTimeout fallback
+window.requestAnimFrame = (function() {
+	return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame ||
+	function(callback) {
+		window.setTimeout(callback, 1000 / 60);
+	};
+
+})(); (function() {
 	var game = {};
-	var supportsCanvas, canvasElement, canvasContext;
+
+	var canvas;
+	var stage;
+	var screen_width;
+	var screen_height;
+	var bmpAnimation;
 
 	game.init = function() {
-		supportsCanvas = !!document.createElement('canvas').getContext;
-		canvasElement = document.getElementById('gameCanvas');
-		canvasContext = canvasElement.getContext('2d');
-		console.log('Game Loaded, And canvas support is: ' + supportsCanvas);
-		game.draw();
+		//find canvas and load images, wait for last image to load
+		canvas = document.getElementById("gameCanvas");
+		game.startGame();
 	}
 
-	game.startGameLoop = function () {
-        window.requestAnimationFrame(game.gameLoop);
-    },
+	game.startGame = function() {
+		// create a new stage and point it at our canvas:
+		stage = new createjs.Stage(canvas);
 
-    game.gameLoop = function () {
-        game.draw();
-        window.requestAnimationFrame(game.gameLoop);
-    },
+		// grab canvas width and height for later calculations:
+		screen_width = canvas.width;
+		screen_height = canvas.height;
 
-    game.draw = function () {
-    	game.clear;
-        canvasContext.fillStyle = "rgba(0,0,0,1)";
-        canvasContext.fillRect(Math.random() * 400, Math.random() * 300, 10, 10);
-    }
+		map.init(stage);
 
-    game.clear = function () {
-        canvasContext.clearRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
-    }
+		// we want to do some work before we update the canvas,
+		// otherwise we could use Ticker.addListener(stage);
+		createjs.Ticker.addListener(window);
+		createjs.Ticker.useRAF = true;
+		createjs.Ticker.setFPS(60);
+		createjs.Ticker.addEventListener("tick", game.tick);
+	}
 
+	game.tick = function() {
+		// Hit testing the screen width, otherwise our sprite would disappear
+		
+		// update the stage:
+		stage.update();
+	}
 	document.addEventListener("DOMContentLoaded", game.init, false);
 
 })();
